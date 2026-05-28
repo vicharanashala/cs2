@@ -7,6 +7,7 @@ require('dotenv').config();
 
 // Import routes and middleware
 const authRoutes = require('./backend/routes/auth');
+const faqRoutes = require('./backend/routes/faq');
 const { authMiddleware, roleMiddleware } = require('./backend/middleware/auth');
 
 // Initialize Passport strategies
@@ -55,6 +56,9 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/faq_sessi
 
 // Auth routes (public)
 app.use('/auth', authRoutes);
+
+// FAQ routes
+app.use('/faq', faqRoutes);
 
 // Protected route example
 app.get('/api/protected', authMiddleware, (req, res) => {

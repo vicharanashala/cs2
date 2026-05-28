@@ -1,18 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const FAQ = require('../models/FAQ');
-
-// Middleware to check authentication
-const isAuth = (req, res, next) => {
-  if (req.isAuthenticated()) return next();
-  res.status(401).json({ message: 'Unauthorized' });
-};
-
-// Middleware to check admin
-const isAdmin = (req, res, next) => {
-  if (req.isAuthenticated() && req.user.role === 'admin') return next();
-  res.status(403).json({ message: 'Forbidden - Admins only' });
-};
+const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 
 // GET all FAQs (public)
 router.get('/', async (req, res) => {
@@ -25,7 +14,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST add new FAQ (authenticated)
-router.post('/add', isAuth, async (req, res) => {
+router.post('/add', authMiddleware, async (req, res) => {
   try {
     const { question, answer } = req.body;
     const faq = await FAQ.create({
@@ -40,9 +29,12 @@ router.post('/add', isAuth, async (req, res) => {
 });
 
 // POST add reply to FAQ (authenticated)
-router.post('/:id/reply', isAuth, async (req, res) => {
+router.post('/:id/reply', authMiddleware, async (req, res) => {
   try {
     const faq = await FAQ.findById(req.params.id);
+    if (!faq) {
+      return res.status(404).json({ message: 'FAQ not found' });
+    }
     faq.replies.push({
       text: req.body.text,
       createdBy: req.user.name
@@ -55,7 +47,7 @@ router.post('/:id/reply', isAuth, async (req, res) => {
 });
 
 // DELETE faq (admin only)
-router.delete('/:id', isAdmin, async (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
   try {
     await FAQ.findByIdAndDelete(req.params.id);
     res.json({ message: 'FAQ deleted successfully' });
@@ -65,7 +57,7 @@ router.delete('/:id', isAdmin, async (req, res) => {
 });
 
 // PUT edit faq (admin only)
-router.put('/:id', isAdmin, async (req, res) => {
+router.put('/:id', authMiddleware, roleMiddleware(['admin']), async (req, res) => {
   try {
     const { question, answer } = req.body;
     const faq = await FAQ.findByIdAndUpdate(

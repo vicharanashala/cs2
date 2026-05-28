@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../App';
 
 const AddFAQ = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user } = useContext(AuthContext);
+
+  const getAuthHeader = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,13 +19,13 @@ const AddFAQ = () => {
     try {
       await axios.post('http://localhost:5000/faq/add',
         { question, answer },
-        { withCredentials: true }
+        getAuthHeader()
       );
       setMessage('✅ FAQ added successfully!');
       setQuestion('');
       setAnswer('');
     } catch (err) {
-      setMessage('❌ Error adding FAQ!');
+      setMessage('❌ Error adding FAQ! Please try again.');
     }
     setLoading(false);
   };
@@ -66,8 +72,8 @@ const styles = {
   title: { marginBottom: '25px', color: '#333' },
   formGroup: { marginBottom: '20px' },
   label: { display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' },
-  input: { width: '100%', padding: '12px', fontSize: '15px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none' },
-  textarea: { width: '100%', padding: '12px', fontSize: '15px', borderRadius: '8px', border: '1px solid #ddd', height: '120px', outline: 'none', resize: 'vertical' },
+  input: { width: '100%', padding: '12px', fontSize: '15px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none', boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '12px', fontSize: '15px', borderRadius: '8px', border: '1px solid #ddd', height: '120px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' },
   button: { width: '100%', padding: '12px', background: '#4285F4', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', fontWeight: '600' },
   message: { padding: '10px', borderRadius: '8px', background: '#f0f7ff', marginBottom: '20px', fontWeight: '500' }
 };

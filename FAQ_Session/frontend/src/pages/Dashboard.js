@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../App';
 
-const Dashboard = ({ user }) => {
+const Dashboard = () => {
+  const { user } = useContext(AuthContext);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
